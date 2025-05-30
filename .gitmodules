@@ -1,0 +1,3 @@
+[submodule "HairFastGAN"]
+	path = HairFastGAN
+	url = https://huggingface.co/AIRI-Institute/HairFastGAN
