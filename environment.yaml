@@ -12,7 +12,7 @@ dependencies:
   # - pytorch3d
   - pip
   - pip:
-    - numpy
+    - numpy<2
     - -r requirements.txt
 #   - mediapipe
 #   - opencv-python
