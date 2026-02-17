@@ -20,7 +20,7 @@ ENV MAMBA_EXE="/bin/micromamba"
 COPY --from=micromamba "$MAMBA_EXE" "$MAMBA_EXE"
 COPY --from=micromamba /usr/local/bin/_activate_current_env.sh /usr/local/bin/_activate_current_env.sh
 COPY --from=micromamba /usr/local/bin/_dockerfile_shell.sh /usr/local/bin/_dockerfile_shell.sh
-COPY --from=micromamba /usr/local/bin/_entrypoint.sh /usr/local/bin/_entrypoint.sh
+COPY ./_entrypoint.sh /usr/local/bin/_entrypoint.sh
 COPY --from=micromamba /usr/local/bin/_dockerfile_initialize_user_accounts.sh /usr/local/bin/_dockerfile_initialize_user_accounts.sh
 COPY --from=micromamba /usr/local/bin/_dockerfile_setup_root_prefix.sh /usr/local/bin/_dockerfile_setup_root_prefix.sh
 
@@ -55,7 +55,7 @@ ENV TZ=Etc/UTC
 USER root
 
 # Install common tools
-RUN apt update --fix-missing && apt install -y wget gnupg2 git cmake curl unzip screen
+RUN apt update --fix-missing && apt install -y wget gnupg2 git cmake curl unzip screen cron
 RUN apt install -y python3 python3-pip python3-venv \
 libglew-dev libgl1-mesa-dev libglib2.0-0 libopencv-dev protobuf-compiler libgoogle-glog-dev libboost-all-dev libhdf5-dev libatlas-base-dev
 
@@ -66,7 +66,11 @@ COPY ./requirements.txt* /workspace/requirements.txt
 COPY ./environment*.y*ml /workspace/environment.yaml
 # COPY ./submodules /workspace/submodules
 
-
+# Auto cleanup
+RUN apt-get update && apt-get install -y cron
+RUN echo "0 * * * * find /tmp -type f -mmin +1440 -delete" > /etc/cron.d/cleanup-tmp
+RUN chmod 0644 /etc/cron.d/cleanup-tmp
+RUN crontab /etc/cron.d/cleanup-tmp
 
 # Install environment with micromamba
 RUN --mount=type=cache,target=/opt/conda/pkgs --mount=type=cache,target=/root/.cache/pip micromamba install -y -n base -f ./environment.yaml && \
